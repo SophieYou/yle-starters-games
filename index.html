@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YLE Starters 單詞遊戲</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'PingFang TC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .game-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .game-card .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .game-card h2 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .game-card p {
+            color: #868e96;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        .game-card.matching {
+            border-left: 5px solid #51cf66;
+        }
+
+        .game-card.matching:hover {
+            border-left-color: #40c057;
+        }
+
+        .game-card.spelling {
+            border-left: 5px solid #339af0;
+        }
+
+        .game-card.spelling:hover {
+            border-left-color: #228be6;
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            margin-top: 30px;
+            font-size: 0.9em;
+        }
+
+        .footer a {
+            color: rgba(255,255,255,0.9);
+        }
+
+        @media (max-width: 500px) {
+            h1 { font-size: 1.8em; }
+            .game-card { padding: 20px; }
+            .game-card .icon { font-size: 2.5em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 YLE Starters</h1>
+        <p class="subtitle">劍橋少儿英語單詞遊戲 · 330+ 單詞</p>
+
+        <div class="game-cards">
+            <a href="starters-word-game.html" class="game-card matching">
+                <div class="icon">🎴</div>
+                <h2>翻牌配對遊戲</h2>
+                <p>翻開卡片，找出英文單詞和中文意思的配對<br>訓練記憶力，鞏固單詞</p>
+            </a>
+
+            <a href="starters-spelling-game.html" class="game-card spelling">
+                <div class="icon">🔤</div>
+                <h2>拼寫遊戲</h2>
+                <p>看中文意思，拼出英文單詞<br>兩種難度，逐步挑戰</p>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>基於 Cambridge YLE Starters Word List</p>
+        </div>
+    </div>
+</body>
+</html>

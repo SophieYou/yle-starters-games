@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>單詞翻牌配對遊戲 - YLE Starters 完整版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'PingFang TC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 0.95em;
+        }
+
+        .stat-box span {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* 分类选择 */
+        .category-section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .category-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .category-btn {
+            background: #f1f3f4;
+            border: 2px solid transparent;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-btn:hover {
+            background: #e8f0fe;
+        }
+
+        .category-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .category-btn .count {
+            background: rgba(0,0,0,0.1);
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 4px;
+        }
+
+        .category-btn.active .count {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* 难度选择 */
+        .difficulty-section {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .diff-btn {
+            background: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .diff-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .diff-btn.active {
+            background: #ffd43b;
+            color: #333;
+        }
+
+        /* 控制按钮 */
+        .controls {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn.green { background: #51cf66; }
+        .btn.blue { background: #339af0; }
+
+        /* 游戏板 */
+        .game-board {
+            display: grid;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .game-board.size-4 { grid-template-columns: repeat(4, 1fr); max-width: 520px; margin: 0 auto 15px; }
+        .game-board.size-5 { grid-template-columns: repeat(5, 1fr); max-width: 650px; margin: 0 auto 15px; }
+        .game-board.size-6 { grid-template-columns: repeat(6, 1fr); max-width: 780px; margin: 0 auto 15px; }
+
+        .card {
+            aspect-ratio: 1;
+            perspective: 1000px;
+            cursor: pointer;
+            min-width: 85px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s;
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner,
+        .card.matched .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 8px;
+            word-break: break-word;
+        }
+
+        .card-front {
+            background: linear-gradient(145deg, #ffd43b, #fab005);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .card-front::after {
+            content: "?";
+            font-size: 2.2em;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .card-back {
+            background: white;
+            transform: rotateY(180deg);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            color: #333;
+            font-weight: bold;
+            font-size: 1.4em;
+            line-height: 1.2;
+        }
+
+        .card.english .card-back {
+            background: linear-gradient(145deg, #74c0fc, #339af0);
+            color: white;
+        }
+
+        .card.chinese .card-back {
+            background: linear-gradient(145deg, #ffa94d, #ff6b6b);
+            color: white;
+            font-size: 1.6em;
+        }
+
+        .card.matched .card-back {
+            background: linear-gradient(145deg, #51cf66, #40c057) !important;
+            color: white !important;
+        }
+
+        .card.matched { pointer-events: none; }
+
+        /* 消息 */
+        .message {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+            animation: bounce 0.5s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* 单词表 */
+        .word-list {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .word-list h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .word-list-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+        }
+
+        .word-item {
+            background: #f8f9fa;
+            padding: 6px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85em;
+        }
+
+        .word-item span {
+            display: block;
+            color: #868e96;
+            font-size: 0.8em;
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            height: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #51cf66;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        @media (max-width: 600px) {
+            .card { min-width: 65px; }
+            .card-front::after { font-size: 1.6em; }
+            .card-back { font-size: 1.1em; }
+            .card.chinese .card-back { font-size: 1.3em; }
+            h1 { font-size: 1.4em; }
+            .categories { gap: 5px; }
+            .category-btn { padding: 5px 10px; font-size: 0.75em; }
+            .game-board.size-4 { max-width: 320px; }
+            .game-board.size-6 { max-width: 420px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎴 單詞翻牌配對遊戲</h1>
+        <p class="subtitle">YLE Starters 完整詞庫 · 330+ 單詞</p>
+
+        <div class="stats">
+            <div class="stat-box">⏱️ 時間: <span id="timer">0</span>秒</div>
+            <div class="stat-box">🎯 翻牌: <span id="moves">0</span>次</div>
+            <div class="stat-box">✅ 配對: <span id="matches">0</span>/<span id="totalPairs">0</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="category-section">
+            <h3>📚 選擇類別（可多選）：</h3>
+            <div class="categories" id="categories"></div>
+        </div>
+
+        <div class="difficulty-section">
+            <button class="diff-btn active" onclick="setDifficulty(8)">簡單 8對</button>
+            <button class="diff-btn" onclick="setDifficulty(12)">中等 12對</button>
+            <button class="diff-btn" onclick="setDifficulty(18)">困難 18對</button>
+            <button class="diff-btn" onclick="setDifficulty(24)">挑戰 24對</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn green" onclick="startGame()">🔄 開始新遊戲</button>
+            <button class="btn blue" onclick="toggleWordList()">📖 查看單詞</button>
+        </div>
+
+        <div class="game-board size-4" id="gameBoard"></div>
+
+        <div class="message" id="message"></div>
+
+        <div class="word-list" id="wordListSection" style="display: none;">
+            <h3>本輪單詞 (<span id="wordCount">0</span>個)</h3>
+            <div class="word-list-items" id="wordListItems"></div>
+        </div>
+    </div>
+
+    <script>
+        // 完整单词库 - 按类别分类（繁体中文）
+        const wordBank = {
+            "動物 Animals": [
+                { en: "animal", zh: "動物" },
+                { en: "bear", zh: "熊" },
+                { en: "bee", zh: "蜜蜂" },
+                { en: "bird", zh: "鳥" },
+                { en: "cat", zh: "貓" },
+                { en: "chicken", zh: "雞" },
+                { en: "cow", zh: "牛" },
+                { en: "crocodile", zh: "鱷魚" },
+                { en: "dog", zh: "狗" },
+                { en: "donkey", zh: "驢" },
+                { en: "duck", zh: "鴨子" },
+                { en: "elephant", zh: "大象" },
+                { en: "fish", zh: "魚" },
+                { en: "frog", zh: "青蛙" },
+                { en: "giraffe", zh: "長頸鹿" },
+                { en: "goat", zh: "山羊" },
+                { en: "hippo", zh: "河馬" },
+                { en: "horse", zh: "馬" },
+                { en: "lizard", zh: "蜥蜴" },
+                { en: "monkey", zh: "猴子" },
+                { en: "mouse", zh: "老鼠" },
+                { en: "pet", zh: "寵物" },
+                { en: "polar bear", zh: "北極熊" },
+                { en: "sheep", zh: "羊" },
+                { en: "snake", zh: "蛇" },
+                { en: "spider", zh: "蜘蛛" },
+                { en: "tiger", zh: "老虎" },
+                { en: "zebra", zh: "斑馬" },
+                { en: "alien", zh: "外星人" },
+                { en: "monster", zh: "怪物" },
+                { en: "jellyfish", zh: "水母" }
+            ],
+            "食物 Food": [
+                { en: "food", zh: "食物" },
+                { en: "bread", zh: "麵包" },
+                { en: "breakfast", zh: "早餐" },
+                { en: "burger", zh: "漢堡" },
+                { en: "cake", zh: "蛋糕" },
+                { en: "candy", zh: "糖果" },
+                { en: "chocolate", zh: "朱古力" },
+                { en: "chips", zh: "薯條" },
+                { en: "dinner", zh: "晚餐" },
+                { en: "egg", zh: "雞蛋" },
+                { en: "fries", zh: "炸薯條" },
+                { en: "ice cream", zh: "雪糕" },
+                { en: "lunch", zh: "午餐" },
+                { en: "meat", zh: "肉" },
+                { en: "meatballs", zh: "肉丸" },
+                { en: "pie", zh: "派" },
+                { en: "pizza", zh: "披薩" },
+                { en: "rice", zh: "米飯" },
+                { en: "sausage", zh: "香腸" },
+                { en: "sandwich", zh: "三文治" },
+                { en: "snack", zh: "零食" },
+                { en: "soup", zh: "湯" }
+            ],
+            "水果蔬菜 Fruits": [
+                { en: "fruit", zh: "水果" },
+                { en: "apple", zh: "蘋果" },
+                { en: "banana", zh: "香蕉" },
+                { en: "bean", zh: "豆子" },
+                { en: "carrot", zh: "紅蘿蔔" },
+                { en: "coconut", zh: "椰子" },
+                { en: "grape", zh: "葡萄" },
+                { en: "kiwi", zh: "奇異果" },
+                { en: "lemon", zh: "檸檬" },
+                { en: "lemonade", zh: "檸檬水" },
+                { en: "lime", zh: "青檸" },
+                { en: "mango", zh: "芒果" },
+                { en: "onion", zh: "洋蔥" },
+                { en: "orange", zh: "橙" },
+                { en: "pea", zh: "豌豆" },
+                { en: "pear", zh: "梨" },
+                { en: "pineapple", zh: "菠蘿" },
+                { en: "potato", zh: "薯仔" },
+                { en: "tomato", zh: "番茄" },
+                { en: "vegetable", zh: "蔬菜" }
+            ],
+            "飲料 Drinks": [
+                { en: "drink", zh: "飲料" },
+                { en: "juice", zh: "果汁" },
+                { en: "milk", zh: "牛奶" },
+                { en: "water", zh: "水" },
+                { en: "tea", zh: "茶" },
+                { en: "coffee", zh: "咖啡" }
+            ],
+            "身體 Body": [
+                { en: "body", zh: "身體" },
+                { en: "arm", zh: "手臂" },
+                { en: "ear", zh: "耳朵" },
+                { en: "eye", zh: "眼睛" },
+                { en: "face", zh: "臉" },
+                { en: "foot", zh: "腳" },
+                { en: "hair", zh: "頭髮" },
+                { en: "hand", zh: "手" },
+                { en: "head", zh: "頭" },
+                { en: "leg", zh: "腿" },
+                { en: "mouth", zh: "嘴巴" },
+                { en: "nose", zh: "鼻子" },
+                { en: "tooth", zh: "牙齒" }
+            ],
+            "家庭 Family": [
+                { en: "family", zh: "家庭" },
+                { en: "baby", zh: "嬰兒" },
+                { en: "boy", zh: "男孩" },
+                { en: "brother", zh: "兄弟" },
+                { en: "child", zh: "孩子" },
+                { en: "cousin", zh: "表親" },
+                { en: "dad", zh: "爸爸" },
+                { en: "daughter", zh: "女兒" },
+                { en: "father", zh: "父親" },
+                { en: "friend", zh: "朋友" },
+                { en: "girl", zh: "女孩" },
+                { en: "grandfather", zh: "祖父" },
+                { en: "grandma", zh: "嫲嫲" },
+                { en: "grandmother", zh: "祖母" },
+                { en: "grandpa", zh: "爺爺" },
+                { en: "kid", zh: "小孩" },
+                { en: "man", zh: "男人" },
+                { en: "mother", zh: "母親" },
+                { en: "mum", zh: "媽媽" },
+                { en: "parent", zh: "父母" },
+                { en: "sister", zh: "姐妹" },
+                { en: "son", zh: "兒子" },
+                { en: "woman", zh: "女人" }
+            ],
+            "顏色 Colors": [
+                { en: "colour", zh: "顏色" },
+                { en: "black", zh: "黑色" },
+                { en: "blue", zh: "藍色" },
+                { en: "brown", zh: "棕色" },
+                { en: "green", zh: "綠色" },
+                { en: "grey", zh: "灰色" },
+                { en: "orange", zh: "橙色" },
+                { en: "pink", zh: "粉色" },
+                { en: "purple", zh: "紫色" },
+                { en: "red", zh: "紅色" },
+                { en: "white", zh: "白色" },
+                { en: "yellow", zh: "黃色" }
+            ],
+            "數字 Numbers": [
+                { en: "number", zh: "數字" },
+                { en: "one", zh: "一" },
+                { en: "two", zh: "二" },
+                { en: "three", zh: "三" },
+                { en: "four", zh: "四" },
+                { en: "five", zh: "五" },
+                { en: "six", zh: "六" },
+                { en: "seven", zh: "七" },
+                { en: "eight", zh: "八" },
+                { en: "nine", zh: "九" },
+                { en: "ten", zh: "十" },
+                { en: "eleven", zh: "十一" },
+                { en: "twelve", zh: "十二" },
+                { en: "thirteen", zh: "十三" },
+                { en: "fourteen", zh: "十四" },
+                { en: "fifteen", zh: "十五" },
+                { en: "sixteen", zh: "十六" },
+                { en: "seventeen", zh: "十七" },
+                { en: "eighteen", zh: "十八" },
+                { en: "nineteen", zh: "十九" },
+                { en: "twenty", zh: "二十" }
+            ],
+            "學校 School": [
+                { en: "school", zh: "學校" },
+                { en: "class", zh: "班級" },
+                { en: "classmate", zh: "同學" },
+                { en: "classroom", zh: "課室" },
+                { en: "desk", zh: "書桌" },
+                { en: "eraser", zh: "擦膠" },
+                { en: "lesson", zh: "課程" },
+                { en: "pen", zh: "鋼筆" },
+                { en: "pencil", zh: "鉛筆" },
+                { en: "ruler", zh: "尺子" },
+                { en: "rubber", zh: "擦膠" },
+                { en: "teacher", zh: "老師" },
+                { en: "book", zh: "書" },
+                { en: "bookcase", zh: "書架" },
+                { en: "bookshop", zh: "書店" },
+                { en: "board", zh: "黑板" },
+                { en: "crayon", zh: "蠟筆" },
+                { en: "letter", zh: "字母" },
+                { en: "alphabet", zh: "字母表" },
+                { en: "example", zh: "例子" },
+                { en: "page", zh: "頁" },
+                { en: "paper", zh: "紙" },
+                { en: "word", zh: "單詞" },
+                { en: "answer", zh: "答案" },
+                { en: "question", zh: "問題" }
+            ],
+            "家居 Home": [
+                { en: "house", zh: "房子" },
+                { en: "home", zh: "家" },
+                { en: "apartment", zh: "公寓" },
+                { en: "flat", zh: "公寓" },
+                { en: "room", zh: "房間" },
+                { en: "bathroom", zh: "浴室" },
+                { en: "bedroom", zh: "臥室" },
+                { en: "dining room", zh: "飯廳" },
+                { en: "kitchen", zh: "廚房" },
+                { en: "living room", zh: "客廳" },
+                { en: "hall", zh: "大廳" },
+                { en: "armchair", zh: "扶手椅" },
+                { en: "bed", zh: "床" },
+                { en: "chair", zh: "椅子" },
+                { en: "clock", zh: "時鐘" },
+                { en: "cupboard", zh: "櫥櫃" },
+                { en: "door", zh: "門" },
+                { en: "floor", zh: "地板" },
+                { en: "lamp", zh: "檯燈" },
+                { en: "mirror", zh: "鏡子" },
+                { en: "poster", zh: "海報" },
+                { en: "radio", zh: "收音機" },
+                { en: "rug", zh: "地毯" },
+                { en: "sofa", zh: "梳化" },
+                { en: "table", zh: "桌子" },
+                { en: "television", zh: "電視" },
+                { en: "window", zh: "窗戶" }
+            ],
+            "衣服 Clothes": [
+                { en: "clothes", zh: "衣服" },
+                { en: "bag", zh: "袋" },
+                { en: "baseball cap", zh: "棒球帽" },
+                { en: "boots", zh: "靴" },
+                { en: "coat", zh: "外套" },
+                { en: "dress", zh: "連衣裙" },
+                { en: "glasses", zh: "眼鏡" },
+                { en: "handbag", zh: "手袋" },
+                { en: "hat", zh: "帽" },
+                { en: "jacket", zh: "外套" },
+                { en: "jeans", zh: "牛仔褲" },
+                { en: "shirt", zh: "恤衫" },
+                { en: "shoe", zh: "鞋" },
+                { en: "skirt", zh: "裙" },
+                { en: "T-shirt", zh: "T恤" },
+                { en: "trousers", zh: "褲" },
+                { en: "vest", zh: "背心" }
+            ],
+            "運動 Sports": [
+                { en: "sport", zh: "運動" },
+                { en: "badminton", zh: "羽毛球" },
+                { en: "ball", zh: "球" },
+                { en: "baseball", zh: "棒球" },
+                { en: "basketball", zh: "籃球" },
+                { en: "bat", zh: "球拍" },
+                { en: "football", zh: "足球" },
+                { en: "game", zh: "遊戲" },
+                { en: "hockey", zh: "曲棍球" },
+                { en: "kite", zh: "風箏" },
+                { en: "playground", zh: "操場" },
+                { en: "skateboard", zh: "滑板" },
+                { en: "swim", zh: "游泳" },
+                { en: "tennis", zh: "網球" },
+                { en: "board game", zh: "棋盤遊戲" }
+            ],
+            "交通 Transport": [
+                { en: "transport", zh: "交通" },
+                { en: "bike", zh: "單車" },
+                { en: "boat", zh: "船" },
+                { en: "bus", zh: "巴士" },
+                { en: "car", zh: "汽車" },
+                { en: "helicopter", zh: "直升機" },
+                { en: "lorry", zh: "貨車" },
+                { en: "motorbike", zh: "電單車" },
+                { en: "plane", zh: "飛機" },
+                { en: "train", zh: "火車" },
+                { en: "truck", zh: "貨車" }
+            ],
+            "自然 Nature": [
+                { en: "nature", zh: "自然" },
+                { en: "beach", zh: "海灘" },
+                { en: "cloud", zh: "雲" },
+                { en: "flower", zh: "花" },
+                { en: "garden", zh: "花園" },
+                { en: "grass", zh: "草" },
+                { en: "moon", zh: "月亮" },
+                { en: "park", zh: "公園" },
+                { en: "plant", zh: "植物" },
+                { en: "rain", zh: "雨" },
+                { en: "river", zh: "河" },
+                { en: "sand", zh: "沙" },
+                { en: "sea", zh: "海" },
+                { en: "sky", zh: "天空" },
+                { en: "snow", zh: "雪" },
+                { en: "star", zh: "星星" },
+                { en: "sun", zh: "太陽" },
+                { en: "tree", zh: "樹" },
+                { en: "water", zh: "水" },
+                { en: "wood", zh: "木頭" }
+            ],
+            "玩具 Toys": [
+                { en: "toy", zh: "玩具" },
+                { en: "balloon", zh: "氣球" },
+                { en: "camera", zh: "相機" },
+                { en: "computer", zh: "電腦" },
+                { en: "doll", zh: "娃娃" },
+                { en: "keyboard", zh: "鍵盤" },
+                { en: "phone", zh: "電話" },
+                { en: "photo", zh: "照片" },
+                { en: "picture", zh: "圖片" },
+                { en: "robot", zh: "機械人" },
+                { en: "guitar", zh: "結他" },
+                { en: "piano", zh: "鋼琴" },
+                { en: "music", zh: "音樂" }
+            ],
+            "動作 Actions": [
+                { en: "action", zh: "動作" },
+                { en: "add", zh: "加" },
+                { en: "ask", zh: "問" },
+                { en: "bounce", zh: "彈跳" },
+                { en: "buy", zh: "買" },
+                { en: "catch", zh: "接" },
+                { en: "choose", zh: "選擇" },
+                { en: "clap", zh: "拍手" },
+                { en: "clean", zh: "清潔" },
+                { en: "close", zh: "關閉" },
+                { en: "come", zh: "來" },
+                { en: "cook", zh: "煮飯" },
+                { en: "count", zh: "數數" },
+                { en: "cross", zh: "穿過" },
+                { en: "cut", zh: "切" },
+                { en: "dance", zh: "跳舞" },
+                { en: "do", zh: "做" },
+                { en: "draw", zh: "畫畫" },
+                { en: "drink", zh: "喝" },
+                { en: "drive", zh: "開車" },
+                { en: "eat", zh: "吃" },
+                { en: "enjoy", zh: "享受" },
+                { en: "find", zh: "找到" },
+                { en: "fly", zh: "飛" },
+                { en: "get", zh: "得到" },
+                { en: "give", zh: "給" },
+                { en: "go", zh: "去" },
+                { en: "go to bed", zh: "睡覺" },
+                { en: "have", zh: "有" },
+                { en: "hit", zh: "打" },
+                { en: "hold", zh: "拿" },
+                { en: "jump", zh: "跳" },
+                { en: "kick", zh: "踢" },
+                { en: "know", zh: "知道" },
+                { en: "learn", zh: "學習" },
+                { en: "like", zh: "喜歡" },
+                { en: "listen", zh: "聽" },
+                { en: "live", zh: "住" },
+                { en: "look", zh: "看" },
+                { en: "look at", zh: "看著" },
+                { en: "love", zh: "愛" },
+                { en: "make", zh: "製作" },
+                { en: "open", zh: "打開" },
+                { en: "paint", zh: "畫畫" },
+                { en: "pick up", zh: "撿起" },
+                { en: "play", zh: "玩" },
+                { en: "point", zh: "指" },
+                { en: "put", zh: "放" },
+                { en: "read", zh: "讀" },
+                { en: "ride", zh: "騎" },
+                { en: "run", zh: "跑" },
+                { en: "say", zh: "說" },
+                { en: "see", zh: "看" },
+                { en: "sing", zh: "唱" },
+                { en: "sit", zh: "坐" },
+                { en: "sleep", zh: "睡覺" },
+                { en: "stand", zh: "站" },
+                { en: "take", zh: "拿" },
+                { en: "throw", zh: "扔" },
+                { en: "walk", zh: "行" },
+                { en: "want", zh: "想要" },
+                { en: "watch", zh: "看" },
+                { en: "write", zh: "寫" }
+            ],
+            "形容詞 Adjectives": [
+                { en: "adjective", zh: "形容詞" },
+                { en: "angry", zh: "生氣的" },
+                { en: "beautiful", zh: "美麗的" },
+                { en: "big", zh: "大的" },
+                { en: "clean", zh: "乾淨的" },
+                { en: "closed", zh: "關閉的" },
+                { en: "cool", zh: "酷的" },
+                { en: "correct", zh: "正確的" },
+                { en: "dirty", zh: "污糟的" },
+                { en: "double", zh: "雙倍的" },
+                { en: "favourite", zh: "最喜歡的" },
+                { en: "fun", zh: "有趣的" },
+                { en: "funny", zh: "好笑的" },
+                { en: "good", zh: "好的" },
+                { en: "great", zh: "棒的" },
+                { en: "happy", zh: "開心的" },
+                { en: "long", zh: "長的" },
+                { en: "new", zh: "新的" },
+                { en: "nice", zh: "好的" },
+                { en: "old", zh: "舊的" },
+                { en: "open", zh: "開著的" },
+                { en: "right", zh: "對的" },
+                { en: "sad", zh: "傷心的" },
+                { en: "scary", zh: "可怕的" },
+                { en: "short", zh: "短的" },
+                { en: "small", zh: "小的" },
+                { en: "tall", zh: "高的" },
+                { en: "young", zh: "年輕的" }
+            ],
+            "時間 Time": [
+                { en: "time", zh: "時間" },
+                { en: "afternoon", zh: "下午" },
+                { en: "birthday", zh: "生日" },
+                { en: "day", zh: "日" },
+                { en: "evening", zh: "晚上" },
+                { en: "morning", zh: "早上" },
+                { en: "night", zh: "夜晚" },
+                { en: "today", zh: "今天" },
+                { en: "tomorrow", zh: "明天" },
+                { en: "yesterday", zh: "昨天" },
+                { en: "week", zh: "週" },
+                { en: "month", zh: "月" },
+                { en: "year", zh: "年" }
+            ],
+            "地點 Places": [
+                { en: "place", zh: "地方" },
+                { en: "shop", zh: "商店" },
+                { en: "hospital", zh: "醫院" },
+                { en: "library", zh: "圖書館" },
+                { en: "market", zh: "市場" },
+                { en: "street", zh: "街道" },
+                { en: "zoo", zh: "動物園" },
+                { en: "farm", zh: "農場" },
+                { en: "town", zh: "城鎮" },
+                { en: "city", zh: "城市" }
+            ],
+            "其他 Others": [
+                { en: "a", zh: "一個" },
+                { en: "an", zh: "一個" },
+                { en: "and", zh: "和" },
+                { en: "about", zh: "關於" },
+                { en: "again", zh: "再一次" },
+                { en: "all", zh: "所有" },
+                { en: "here", zh: "這裡" },
+                { en: "there", zh: "那裡" },
+                { en: "hello", zh: "你好" },
+                { en: "goodbye", zh: "再見" },
+                { en: "bye", zh: "再見" },
+                { en: "please", zh: "請" },
+                { en: "sorry", zh: "對不起" },
+                { en: "thank you", zh: "多謝" },
+                { en: "yes", zh: "是" },
+                { en: "no", zh: "不" },
+                { en: "I", zh: "我" },
+                { en: "you", zh: "你" },
+                { en: "he", zh: "他" },
+                { en: "she", zh: "她" },
+                { en: "it", zh: "它" },
+                { en: "we", zh: "我們" },
+                { en: "they", zh: "他們" },
+                { en: "my", zh: "我的" },
+                { en: "your", zh: "你的" },
+                { en: "his", zh: "他的" },
+                { en: "her", zh: "她的" },
+                { en: "name", zh: "名字" },
+                { en: "English", zh: "英語" },
+                { en: "fantastic", zh: "極好的" }
+            ]
+        };
+
+        // 游戏状态
+        let selectedCategories = [];
+        let pairCount = 8;
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let timer = 0;
+        let timerInterval = null;
+        let gameStarted = false;
+        let currentWords = [];
+
+        // 初始化分类按钮
+        function initCategories() {
+            const container = document.getElementById('categories');
+            container.innerHTML = '';
+            
+            const allBtn = document.createElement('button');
+            allBtn.className = 'category-btn active';
+            allBtn.innerHTML = '全部 <span class="count">' + getTotalWords() + '</span>';
+            allBtn.onclick = () => toggleAllCategories();
+            container.appendChild(allBtn);
+            
+            Object.keys(wordBank).forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn';
+                btn.dataset.category = cat;
+                btn.innerHTML = cat.split(' ')[0] + ' <span class="count">' + wordBank[cat].length + '</span>';
+                btn.onclick = () => toggleCategory(cat);
+                container.appendChild(btn);
+            });
+            
+            selectedCategories = Object.keys(wordBank);
+        }
+
+        function getTotalWords() {
+            return Object.values(wordBank).reduce((sum, arr) => sum + arr.length, 0);
+        }
+
+        function toggleAllCategories() {
+            const allBtn = document.querySelectorAll('.category-btn')[0];
+            const otherBtns = document.querySelectorAll('.category-btn:not(:first-child)');
+            
+            if (selectedCategories.length === Object.keys(wordBank).length) {
+                selectedCategories = [];
+                allBtn.classList.remove('active');
+                otherBtns.forEach(btn => btn.classList.remove('active'));
+            } else {
+                selectedCategories = Object.keys(wordBank);
+                allBtn.classList.add('active');
+                otherBtns.forEach(btn => btn.classList.add('active'));
+            }
+            updateStartButton();
+        }
+
+        function toggleCategory(cat) {
+            const allBtn = document.querySelectorAll('.category-btn')[0];
+            const btn = document.querySelector(`[data-category="${cat}"]`);
+            
+            if (selectedCategories.includes(cat)) {
+                selectedCategories = selectedCategories.filter(c => c !== cat);
+                btn.classList.remove('active');
+            } else {
+                selectedCategories.push(cat);
+                btn.classList.add('active');
+            }
+            
+            if (selectedCategories.length === Object.keys(wordBank).length) {
+                allBtn.classList.add('active');
+            } else {
+                allBtn.classList.remove('active');
+            }
+            
+            updateStartButton();
+        }
+
+        function updateStartButton() {
+            const totalWords = getSelectedWords().length;
+        }
+
+        function getSelectedWords() {
+            let words = [];
+            selectedCategories.forEach(cat => {
+                words = words.concat(wordBank[cat]);
+            });
+            return words;
+        }
+
+        function setDifficulty(count) {
+            pairCount = count;
+            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const board = document.getElementById('gameBoard');
+            if (count <= 8) board.className = 'game-board size-4';
+            else if (count <= 12) board.className = 'game-board size-4';
+            else if (count <= 18) board.className = 'game-board size-6';
+            else board.className = 'game-board size-6';
+            
+            startGame();
+        }
+
+        function shuffle(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function startGame() {
+            if (selectedCategories.length === 0) {
+                alert('請至少選擇一個類別！');
+                return;
+            }
+            
+            clearInterval(timerInterval);
+            timer = 0;
+            moves = 0;
+            matchedPairs = 0;
+            flippedCards = [];
+            gameStarted = true;
+            
+            document.getElementById('timer').textContent = '0';
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('matches').textContent = '0';
+            document.getElementById('totalPairs').textContent = pairCount;
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('message').classList.remove('show');
+            document.getElementById('wordListSection').style.display = 'none';
+            
+            const allWords = shuffle(getSelectedWords());
+            const uniqueWords = [];
+            const seen = new Set();
+            for (const w of allWords) {
+                if (!seen.has(w.en)) {
+                    seen.add(w.en);
+                    uniqueWords.push(w);
+                }
+                if (uniqueWords.length >= pairCount) break;
+            }
+            currentWords = uniqueWords;
+            
+            cards = [];
+            currentWords.forEach((word, index) => {
+                cards.push({ id: index, type: 'en', word: word.en, pairId: index });
+                cards.push({ id: index + pairCount, type: 'zh', word: word.zh, pairId: index });
+            });
+            cards = shuffle(cards);
+            
+            renderBoard();
+            
+            timerInterval = setInterval(() => {
+                timer++;
+                document.getElementById('timer').textContent = timer;
+            }, 1000);
+        }
+
+        function renderBoard() {
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            
+            cards.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.dataset.index = index;
+                cardEl.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front"></div>
+                        <div class="card-back ${card.type === 'en' ? 'english' : 'chinese'}">${card.word}</div>
+                    </div>
+                `;
+                cardEl.addEventListener('click', () => flipCard(index));
+                board.appendChild(cardEl);
+            });
+        }
+
+        function flipCard(index) {
+            if (!gameStarted) return;
+            if (flippedCards.length >= 2) return;
+            if (flippedCards.includes(index)) return;
+            
+            const cardEl = document.querySelectorAll('.card')[index];
+            if (cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
+            
+            cardEl.classList.add('flipped');
+            flippedCards.push(index);
+            
+            if (flippedCards.length === 2) {
+                moves++;
+                document.getElementById('moves').textContent = moves;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [first, second] = flippedCards;
+            const card1 = cards[first];
+            const card2 = cards[second];
+            
+            if (card1.pairId === card2.pairId && card1.type !== card2.type) {
+                matchedPairs++;
+                document.getElementById('matches').textContent = matchedPairs;
+                document.getElementById('progressFill').style.width = (matchedPairs / pairCount * 100) + '%';
+                
+                setTimeout(() => {
+                    document.querySelectorAll('.card')[first].classList.add('matched');
+                    document.querySelectorAll('.card')[second].classList.add('matched');
+                    flippedCards = [];
+                    
+                    if (matchedPairs === pairCount) {
+                        gameWon();
+                    }
+                }, 500);
+            } else {
+                setTimeout(() => {
+                    document.querySelectorAll('.card')[first].classList.remove('flipped');
+                    document.querySelectorAll('.card')[second].classList.remove('flipped');
+                    flippedCards = [];
+                }, 1000);
+            }
+        }
+
+        function gameWon() {
+            clearInterval(timerInterval);
+            gameStarted = false;
+            
+            const message = document.getElementById('message');
+            let stars = '';
+            if (moves <= pairCount * 1.3) stars = '⭐⭐⭐ 完美！';
+            else if (moves <= pairCount * 1.8) stars = '⭐⭐ 很棒！';
+            else stars = '⭐ 加油！';
+            
+            message.innerHTML = `🎉 太棒了！<br>用時 ${timer} 秒 · 翻牌 ${moves} 次<br>${stars}`;
+            message.classList.add('show');
+        }
+
+        function toggleWordList() {
+            const section = document.getElementById('wordListSection');
+            if (section.style.display === 'none') {
+                const items = document.getElementById('wordListItems');
+                document.getElementById('wordCount').textContent = currentWords.length;
+                items.innerHTML = currentWords.map(w => `
+                    <div class="word-item">
+                        ${w.en}
+                        <span>${w.zh}</span>
+                    </div>
+                `).join('');
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        // 初始化
+        initCategories();
+        startGame();
+    </script>
+</body>
+</html>
