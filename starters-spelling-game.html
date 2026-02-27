@@ -424,21 +424,22 @@
                 <div>
                     <span class="control-label">🎯 難度</span>
                     <div class="control-row">
-                        <button class="btn active" onclick="setDifficulty('easy')">簡單（提示字母）</button>
-                        <button class="btn" onclick="setDifficulty('hard')">困難（全空白）</button>
+                        <button class="btn active" onclick="setDifficulty('easy', this)">簡單（提示字母）</button>
+                        <button class="btn" onclick="setDifficulty('hard', this)">困難（全空白）</button>
                     </div>
                 </div>
                 <div>
                     <span class="control-label">🔢 題目數量</span>
                     <div class="control-row">
-                        <button class="btn" onclick="setCount(5)">5題</button>
-                        <button class="btn active" onclick="setCount(10)">10題</button>
-                        <button class="btn" onclick="setCount(20)">20題</button>
+                        <button class="btn" onclick="setCount(5, this)">5題</button>
+                        <button class="btn active" onclick="setCount(10, this)">10題</button>
+                        <button class="btn" onclick="setCount(20, this)">20題</button>
                     </div>
                 </div>
             </div>
             <div class="control-row">
                 <button class="btn green" onclick="startGame()">🚀 開始遊戲</button>
+                <a href="index.html" class="btn" style="text-decoration:none;">🏠 返回首頁</a>
             </div>
         </div>
 
@@ -492,7 +493,10 @@
                     <div class="label">正確率</div>
                 </div>
             </div>
-            <button class="btn green" onclick="startGame()">🔄 再玩一次</button>
+            <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+                <button class="btn green" onclick="startGame()">🔄 再玩一次</button>
+                <a href="index.html" class="btn" style="background:#868e96;color:white;text-decoration:none;">🏠 返回首頁</a>
+            </div>
         </div>
     </div>
 
@@ -585,8 +589,6 @@
         let gameActive = false;
         let attemptCount = 0;
         const maxAttempts = 3;
-        let attemptCount = 0;  // 当前单词尝试次数
-        const maxAttempts = 3; // 最多尝试3次
 
         // 初始化分类按钮
         function initCategoryBtns() {
@@ -596,37 +598,37 @@
             const allBtn = document.createElement('button');
             allBtn.className = 'btn active';
             allBtn.textContent = '全部';
-            allBtn.onclick = () => selectCategory(null);
+            allBtn.onclick = (e) => selectCategory(null, e.target);
             container.appendChild(allBtn);
             
             Object.keys(wordBank).forEach(cat => {
                 const btn = document.createElement('button');
                 btn.className = 'btn';
                 btn.textContent = cat;
-                btn.onclick = () => selectCategory(cat);
+                btn.onclick = (e) => selectCategory(cat, e.target);
                 container.appendChild(btn);
             });
         }
 
-        function selectCategory(cat) {
+        function selectCategory(cat, target) {
             selectedCategory = cat;
             document.querySelectorAll('#categoryBtns .btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            target.classList.add('active');
         }
 
-        function setDifficulty(level) {
+        function setDifficulty(level, target) {
             difficulty = level;
             document.querySelectorAll('.controls .btn').forEach(btn => {
                 if (btn.textContent.includes('簡單') || btn.textContent.includes('困難')) {
                     btn.classList.remove('active');
                 }
             });
-            event.target.classList.add('active');
+            target.classList.add('active');
         }
 
-        function setCount(count) {
+        function setCount(count, target) {
             questionCount = count;
             document.querySelectorAll('.controls .btn').forEach(btn => {
                 if (btn.textContent.match(/^\d+題$/)) {
@@ -636,7 +638,7 @@
                     }
                 }
             });
-            event.target.classList.add('active');
+            target.classList.add('active');
         }
 
         function shuffle(array) {

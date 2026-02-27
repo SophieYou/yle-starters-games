@@ -357,7 +357,7 @@
         </div>
 
         <div class="category-section">
-            <h3>📚 選擇類別（可多選）：</h3>
+            <h3>📚 選擇類別：</h3>
             <div class="categories" id="categories"></div>
         </div>
 
@@ -371,6 +371,7 @@
         <div class="controls">
             <button class="btn green" onclick="startGame()">🔄 開始新遊戲</button>
             <button class="btn blue" onclick="toggleWordList()">📖 查看單詞</button>
+            <a href="index.html" class="btn" style="background:#868e96;color:white;text-decoration:none;">🏠 返回首頁</a>
         </div>
 
         <div class="game-board size-4" id="gameBoard"></div>
@@ -859,81 +860,56 @@
         let timerInterval = null;
         let gameStarted = false;
         let currentWords = [];
+        let selectedCategory = 'all';  // 单选：当前选中的类别
 
         // 初始化分类按钮
         function initCategories() {
             const container = document.getElementById('categories');
             container.innerHTML = '';
             
+            // 全部按钮
             const allBtn = document.createElement('button');
             allBtn.className = 'category-btn active';
+            allBtn.dataset.category = 'all';
             allBtn.innerHTML = '全部 <span class="count">' + getTotalWords() + '</span>';
-            allBtn.onclick = () => toggleAllCategories();
+            allBtn.onclick = () => selectCategory('all');
             container.appendChild(allBtn);
             
+            // 各类别按钮
             Object.keys(wordBank).forEach(cat => {
                 const btn = document.createElement('button');
                 btn.className = 'category-btn';
                 btn.dataset.category = cat;
                 btn.innerHTML = cat.split(' ')[0] + ' <span class="count">' + wordBank[cat].length + '</span>';
-                btn.onclick = () => toggleCategory(cat);
+                btn.onclick = () => selectCategory(cat);
                 container.appendChild(btn);
             });
-            
-            selectedCategories = Object.keys(wordBank);
         }
 
         function getTotalWords() {
             return Object.values(wordBank).reduce((sum, arr) => sum + arr.length, 0);
         }
 
-        function toggleAllCategories() {
-            const allBtn = document.querySelectorAll('.category-btn')[0];
-            const otherBtns = document.querySelectorAll('.category-btn:not(:first-child)');
-            
-            if (selectedCategories.length === Object.keys(wordBank).length) {
-                selectedCategories = [];
-                allBtn.classList.remove('active');
-                otherBtns.forEach(btn => btn.classList.remove('active'));
-            } else {
-                selectedCategories = Object.keys(wordBank);
-                allBtn.classList.add('active');
-                otherBtns.forEach(btn => btn.classList.add('active'));
-            }
-            updateStartButton();
-        }
-
-        function toggleCategory(cat) {
-            const allBtn = document.querySelectorAll('.category-btn')[0];
-            const btn = document.querySelector(`[data-category="${cat}"]`);
-            
-            if (selectedCategories.includes(cat)) {
-                selectedCategories = selectedCategories.filter(c => c !== cat);
+        function selectCategory(cat) {
+            selectedCategory = cat;
+            // 更新按钮状态（单选）
+            document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('active');
-            } else {
-                selectedCategories.push(cat);
-                btn.classList.add('active');
-            }
-            
-            if (selectedCategories.length === Object.keys(wordBank).length) {
-                allBtn.classList.add('active');
-            } else {
-                allBtn.classList.remove('active');
-            }
-            
-            updateStartButton();
-        }
-
-        function updateStartButton() {
-            const totalWords = getSelectedWords().length;
+                if (btn.dataset.category === cat) {
+                    btn.classList.add('active');
+                }
+            });
+            // 自动开始新游戏
+            startGame();
         }
 
         function getSelectedWords() {
-            let words = [];
-            selectedCategories.forEach(cat => {
-                words = words.concat(wordBank[cat]);
-            });
-            return words;
+            if (selectedCategory === 'all') {
+                let words = [];
+                Object.values(wordBank).forEach(arr => words = words.concat(arr));
+                return words;
+            }
+            return [...wordBank[selectedCategory]];
         }
 
         function setDifficulty(count) {
@@ -960,11 +936,6 @@
         }
 
         function startGame() {
-            if (selectedCategories.length === 0) {
-                alert('請至少選擇一個類別！');
-                return;
-            }
-            
             clearInterval(timerInterval);
             timer = 0;
             moves = 0;
